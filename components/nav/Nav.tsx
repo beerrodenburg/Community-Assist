@@ -10,8 +10,8 @@ import { useLenis } from "@/lib/LenisProvider";
 const NAV_SLIDES: ReadonlyArray<{ label: string; index: number }> = [
   { label: "Mission", index: 1 },      // slide-02 — Our Mission & Story
   { label: "Events", index: 5 },       // slide-06 — "The 4 Events" section divider
-  { label: "Impact", index: 4 },       // slide-05 — IDR 942M raised to date
   { label: "Scholarship", index: 12 }, // slide-13 — Ragam Educational Scholarship Program
+  { label: "Impact", index: 14 },      // slide-15 — Stories of Impact
   { label: "Sponsor", index: 21 },     // slide-22 — Businesses Sponsor Tiers
 ];
 
@@ -98,17 +98,6 @@ export function Nav() {
             {item.label}
           </NavLink>
         ))}
-
-        <a
-          href="#contribute"
-          onClick={(e) => {
-            e.preventDefault();
-            scrollToElementId(lenis, "contribute");
-          }}
-          className="hidden rounded-full px-3 py-2 text-sm text-[color:var(--color-ink)]/80 transition-colors hover:bg-[color:var(--color-ink)]/[0.04] hover:text-[color:var(--color-ink)] md:inline-block"
-        >
-          Contribute
-        </a>
 
         <a
           href="#contribute"
