@@ -4,8 +4,18 @@ import { motion } from "motion/react";
 import { Button } from "@/components/ui/Button";
 import { Footer } from "./Footer";
 
-// TODO: replace with the real partnerships contact once provided.
-const PARTNER_EMAIL = "hello@communityassist.id";
+const PARTNER_EMAIL = "communityassist@indosole.com";
+const PARTNER_SUBJECT = "Partnership with Community Assist 2026";
+const PARTNER_BODY = `Hi Community Assist team,
+
+I'd love to learn more about partnering with you for the 2026 program.
+
+A bit about us:
+· Company / brand:
+· What we're interested in (sponsor tier, sponsoring a child, custom):
+· Anything else you should know:
+
+Looking forward to hearing from you.`;
 
 const reveal = {
   initial: { opacity: 0, y: 24 },
@@ -33,7 +43,7 @@ export function Finale() {
           className="mt-4 max-w-[20ch] font-[family-name:var(--font-display)] text-5xl leading-[1.05] tracking-[-0.02em] text-[color:var(--color-ink)] md:text-6xl lg:text-7xl"
         >
           Two ways to{" "}
-          <span className="italic font-light text-[color:var(--color-ca-blue-deep)]">
+          <span className="italic font-light text-[color:var(--color-ca-blue)]">
             join us.
           </span>
         </motion.h2>
@@ -55,18 +65,21 @@ function DonatePanel() {
       id="donate"
       {...reveal}
       transition={{ ...reveal.transition, delay: 0.2 }}
-      className="flex flex-col gap-6 rounded-3xl border border-[color:var(--color-ink)]/10 bg-white p-8 md:p-10"
+      className="flex flex-col gap-8 rounded-3xl bg-[#c8d9e6] p-8 md:p-10"
     >
       <div>
         <p className="text-xs uppercase tracking-[0.28em] text-[color:var(--color-ca-blue-deep)]">
           Donate
         </p>
         <h3 className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight tracking-[-0.01em] text-[color:var(--color-ink)] md:text-4xl">
-          Transfer directly to our partner foundation.
+          Transfer directly to our{" "}
+          <span className="italic font-light text-[color:var(--color-ca-blue-deep)]">
+            partner foundation.
+          </span>
         </h3>
       </div>
 
-      <dl className="grid grid-cols-1 gap-4 rounded-2xl bg-[color:var(--color-ink)]/[0.03] p-6 text-sm sm:grid-cols-2">
+      <dl className="grid grid-cols-1 gap-x-6 gap-y-5 rounded-2xl bg-[#b6cbdc] p-6 text-sm sm:grid-cols-2">
         <BankRow label="Account name" value="Ragam Kemanusiaan Indonesia" />
         <BankRow label="Account number" value="800 210 750 800" mono />
         <BankRow label="Bank code" value="008" mono />
@@ -78,16 +91,11 @@ function DonatePanel() {
         />
       </dl>
 
-      <p className="text-sm leading-relaxed text-[color:var(--color-muted)]">
-        Every contribution funds scholarships, school materials, and community
-        programs through Ragam Foundation and Green School Foundation.
+      <p className="text-sm leading-relaxed text-[color:var(--color-ink)]/70">
+        Every contribution funds scholarships, school materials, and a
+        dedicated community manager through Ragam Foundation&rsquo;s
+        Educational Scholarship Program.
       </p>
-
-      <div className="flex flex-wrap gap-3">
-        <Button href={`mailto:${PARTNER_EMAIL}?subject=Donation%20to%20Community%20Assist%202026`}>
-          Email us your gift
-        </Button>
-      </div>
     </motion.div>
   );
 }
@@ -98,29 +106,38 @@ function PartnerPanel({ email }: { email: string }) {
       id="partner"
       {...reveal}
       transition={{ ...reveal.transition, delay: 0.3 }}
-      className="flex flex-col gap-6 rounded-3xl bg-[color:var(--color-ink)] p-8 text-white md:p-10"
+      className="flex flex-col gap-8 rounded-3xl bg-[#e2cad8] p-8 md:p-10"
     >
       <div>
-        <p className="text-xs uppercase tracking-[0.28em] text-white/60">
+        <p className="text-xs uppercase tracking-[0.28em] text-[color:var(--color-ca-pink-deep)]">
           Partner with us
         </p>
-        <h3 className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight tracking-[-0.01em] md:text-4xl">
-          Bring your brand alongside the 2026 program.
+        <h3 className="mt-3 font-[family-name:var(--font-display)] text-3xl leading-tight tracking-[-0.01em] text-[color:var(--color-ink)] md:text-4xl">
+          Bring your brand alongside the{" "}
+          <span className="italic font-light text-[color:var(--color-ca-pink-deep)]">
+            2026 program.
+          </span>
         </h3>
       </div>
 
-      <ul className="flex flex-col gap-3 text-sm leading-relaxed text-white/80">
-        <li>· Title, Premier, and Supporting sponsor tiers</li>
-        <li>· In-kind partnerships: venue, F&B, prizes, services</li>
-        <li>· Co-branded marketing across our event channels</li>
-        <li>· Sponsor a child&rsquo;s full year of education (Rp 6M)</li>
+      <ul className="flex flex-col gap-3 text-sm leading-relaxed text-[color:var(--color-ink)]/85">
+        <PartnerRow>
+          Community, Game Changer, and Champion sponsor tiers (Rp 20M&ndash;120M)
+        </PartnerRow>
+        <PartnerRow>In-kind partnerships: venue, prizes, and services</PartnerRow>
+        <PartnerRow>Co-branded marketing across our event channels</PartnerRow>
+        <PartnerRow>
+          Sponsor a child&rsquo;s full year of education (Rp 6M)
+        </PartnerRow>
       </ul>
+
+      <p className="text-sm leading-relaxed text-[color:var(--color-ink)]/70">
+        Custom packages welcome — let&rsquo;s design one together.
+      </p>
 
       <div className="flex flex-wrap gap-3">
         <Button
-          href={`mailto:${email}?subject=Partnership%20with%20Community%20Assist%202026`}
-          variant="ghost"
-          className="border-white/25 text-white hover:border-white/60 hover:bg-white/10"
+          href={`mailto:${email}?subject=${encodeURIComponent(PARTNER_SUBJECT)}&body=${encodeURIComponent(PARTNER_BODY)}`}
         >
           Start a conversation
         </Button>
@@ -142,7 +159,7 @@ function BankRow({
 }) {
   return (
     <div className={colSpanFull ? "sm:col-span-2" : undefined}>
-      <dt className="text-[11px] uppercase tracking-[0.2em] text-[color:var(--color-muted)]">
+      <dt className="text-[11px] uppercase tracking-[0.2em] text-[color:var(--color-ink)]/55">
         {label}
       </dt>
       <dd
@@ -154,5 +171,17 @@ function BankRow({
         {value}
       </dd>
     </div>
+  );
+}
+
+function PartnerRow({ children }: { children: React.ReactNode }) {
+  return (
+    <li className="flex gap-3">
+      <span
+        aria-hidden
+        className="mt-[0.55em] block h-1.5 w-1.5 flex-none rounded-full bg-[color:var(--color-ca-pink-deep)]"
+      />
+      <span>{children}</span>
+    </li>
   );
 }

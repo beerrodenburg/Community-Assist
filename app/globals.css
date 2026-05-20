@@ -8,8 +8,10 @@
   --color-paper: #efeceb;
   --color-ink: #1f2a38;
   --color-muted: #6b7280;
-  --color-ca-blue: #5bb7e8;
-  --color-ca-blue-deep: #2f8fc4;
+  --color-ca-blue: #7fa8d6;
+  --color-ca-blue-deep: #5b8bc5;
+  --color-ca-pink: #b07bc2;
+  --color-ca-pink-deep: #8e5da1;
 
   --shadow-card: 0 30px 60px -20px rgb(0 0 0 / 0.18), 0 12px 24px -12px rgb(0 0 0 / 0.12);
   --shadow-card-strong: 0 50px 90px -30px rgb(0 0 0 / 0.28), 0 20px 40px -16px rgb(0 0 0 / 0.18);

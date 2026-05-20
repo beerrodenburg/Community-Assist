@@ -123,34 +123,46 @@ function ActiveSlideItem({
   const settled = index / N;
   const nextRising = (index + 0.5) / N;
   const gone = (index + 1) / N;
+  const isFirst = index === 0;
   const isLast = index === N - 1;
 
+  // Slide 0 has no entry animation — it's already settled when the section
+  // comes into view, so scrolling from the Hero doesn't reveal a rise-in.
   // Start the card fully below the viewport (100vh below resting position) so
   // it can't peek above the bottom of the sticky clip box at mount time —
   // % is relative to card height, which on tall viewports leaves a sliver
   // visible. vh is always enough.
   const y = useTransform(
     scrollYProgress,
-    [enterStart, settled],
-    ["100vh", "0vh"],
+    isFirst ? [0, 1] : [enterStart, settled],
+    isFirst ? ["0vh", "0vh"] : ["100vh", "0vh"],
   );
-  const rotateX = useTransform(scrollYProgress, [enterStart, settled], [20, 0]);
+  const rotateX = useTransform(
+    scrollYProgress,
+    isFirst ? [0, 1] : [enterStart, settled],
+    isFirst ? [0, 0] : [20, 0],
+  );
 
   // Scale: 0.85 (below) → 1.0 (settled) → 0.85 (shrunk into the stack behind the next card).
+  // Slide 0 starts at 1.0 and only shrinks during its exit.
   const scale = useTransform(
     scrollYProgress,
     isLast
       ? [enterStart, settled]
-      : [enterStart, settled, nextRising, gone],
-    isLast ? [0.85, 1.0] : [0.85, 1.0, 1.0, 0.85],
+      : isFirst
+        ? [settled, nextRising, gone]
+        : [enterStart, settled, nextRising, gone],
+    isLast
+      ? [0.85, 1.0]
+      : isFirst
+        ? [1.0, 1.0, 0.85]
+        : [0.85, 1.0, 1.0, 0.85],
   );
 
-  // Opacity: stay opaque until the next slide starts rising, then fade out.
-  const opacity = useTransform(
-    scrollYProgress,
-    isLast ? [enterStart, settled] : [nextRising, gone],
-    isLast ? [1, 1] : [1, 0],
-  );
+  // Opacity stays at 1 for the slide's whole lifetime — each new slide rises
+  // in front of the previous (same size, higher z-index) to cover it, so the
+  // transition is purely positional and symmetric in both scroll directions.
+  const opacity = useTransform(scrollYProgress, () => 1);
 
   const pointerEvents = useTransform(scrollYProgress, (v) => {
     if (v < settled) return "none" as const;
@@ -187,33 +199,51 @@ function useJourneySnap(containerRef: RefObject<HTMLDivElement | null>) {
     if (!container) return;
 
     let restTimer: number | null = null;
+    let snapTarget: number | null = null;
+
+    const trySnap = () => {
+      restTimer = null;
+
+      // If Lenis is still moving toward a target we set, leave it alone.
+      // (Lenis's lerp can sit just above zero indefinitely — don't gate on
+      // velocity alone, or the snap may never fire.)
+      if (snapTarget !== null && Math.abs(lenis.scroll - snapTarget) > 1) {
+        restTimer = window.setTimeout(trySnap, 80);
+        return;
+      }
+      snapTarget = null;
+
+      const vh = window.innerHeight;
+      // Document-relative top of the track. offsetTop would be measured from
+      // the nearest positioned ancestor (the `relative` story section) and
+      // return 0 — same coordinate as scroll only when hero === 100vh.
+      const trackStart = container.getBoundingClientRect().top + lenis.scroll;
+      const trackEnd = trackStart + container.offsetHeight - vh;
+      if (trackEnd <= trackStart) return;
+
+      const scroll = lenis.scroll;
+      if (scroll < trackStart - 1 || scroll > trackEnd + 1) return;
+
+      const offset = scroll - trackStart;
+      const k = Math.round(offset / vh);
+      const target = trackStart + k * vh;
+      if (Math.abs(target - scroll) < 1) return;
+
+      snapTarget = target;
+      lenis.scrollTo(target, {
+        duration: 0.55,
+        easing: (t: number) => 1 - Math.pow(1 - t, 3),
+        onComplete: () => {
+          snapTarget = null;
+        },
+      });
+    };
 
     const onScroll = () => {
       if (restTimer !== null) {
         window.clearTimeout(restTimer);
       }
-      restTimer = window.setTimeout(() => {
-        restTimer = null;
-        if (Math.abs(lenis.velocity) > 0.05) return;
-
-        const vh = window.innerHeight;
-        const trackStart = container.offsetTop;
-        const trackEnd = trackStart + container.offsetHeight - vh;
-        if (trackEnd <= trackStart) return;
-
-        const scroll = lenis.scroll;
-        if (scroll < trackStart - 1 || scroll > trackEnd + 1) return;
-
-        const offset = scroll - trackStart;
-        const k = Math.round(offset / vh);
-        const target = trackStart + k * vh;
-        if (Math.abs(target - scroll) < 1) return;
-
-        lenis.scrollTo(target, {
-          duration: 0.55,
-          easing: (t: number) => 1 - Math.pow(1 - t, 3),
-        });
-      }, 140);
+      restTimer = window.setTimeout(trySnap, 140);
     };
 
     const unsubscribe = lenis.on("scroll", onScroll);

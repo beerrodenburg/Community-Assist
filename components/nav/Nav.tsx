@@ -1,43 +1,65 @@
 "use client";
 
 import { motion, useScroll, useTransform } from "motion/react";
+import type Lenis from "lenis";
 import { CommunityAssistHeart } from "@/components/brand/CommunityAssistHeart";
-import { slides } from "@/components/slides/slides.data";
+import { useLenis } from "@/lib/LenisProvider";
 
 // Maps each nav label to the zero-based index of the slide it should jump to.
 // Slide numbers refer to /public/slides/slide-NN.jpg (1-based filenames).
 const NAV_SLIDES: ReadonlyArray<{ label: string; index: number }> = [
-  { label: "Mission", index: 1 },   // slide-02 — Our Mission & Story
-  { label: "Events", index: 6 },    // slide-07 — Event lineup
-  { label: "Impact", index: 8 },    // slide-09 — Our progress so far
-  { label: "Sponsor", index: 15 },  // slide-16 — Sponsorship tiers intro
-  { label: "Contact", index: 27 },  // slide-28 — Contact & socials
+  { label: "Mission", index: 1 },      // slide-02 — Our Mission & Story
+  { label: "Events", index: 5 },       // slide-06 — "The 4 Events" section divider
+  { label: "Impact", index: 4 },       // slide-05 — IDR 942M raised to date
+  { label: "Scholarship", index: 12 }, // slide-13 — Ragam Educational Scholarship Program
+  { label: "Sponsor", index: 21 },     // slide-22 — Businesses Sponsor Tiers
 ];
 
-const DONATE_INDEX = 24; // slide-25 — How to Donate
+// All scroll helpers prefer Lenis (the smooth-scroll engine used site-wide).
+// Native window.scrollTo / Element.scrollIntoView race against Lenis's RAF loop,
+// which made first clicks feel ignored. Lenis is null only under
+// prefers-reduced-motion — in that case we fall back to native instant scroll.
 
-function scrollToSlide(index: number) {
+function scrollToY(lenis: Lenis | null, y: number) {
+  if (lenis) {
+    lenis.scrollTo(y, { force: true });
+  } else {
+    window.scrollTo({ top: y });
+  }
+}
+
+function scrollToElementId(lenis: Lenis | null, id: string) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (lenis) {
+    lenis.scrollTo(el, { force: true });
+  } else {
+    el.scrollIntoView({ block: "start" });
+  }
+}
+
+function scrollToSlide(lenis: Lenis | null, index: number) {
   // Mobile renders slides as a stacked list — each figure carries an id.
   const mobileTarget = document.getElementById(`slide-mobile-${index}`);
   if (mobileTarget && window.matchMedia("(max-width: 767px)").matches) {
-    mobileTarget.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (lenis) lenis.scrollTo(mobileTarget, { force: true });
+    else mobileTarget.scrollIntoView({ block: "start" });
     return;
   }
 
-  // Desktop pins one viewport while the track scrolls. Slide `i` peaks when
-  // scrollYProgress = (i+1)/D, where D = slides.length + 1. The scrollable
-  // range inside the track is (D-1) * vh = N * vh.
+  // Desktop pins one viewport while the track scrolls. The track is D*vh tall
+  // with a vh-sized sticky inner box, so the scrollable range is (D-1)*vh = N*vh
+  // and slide `i` settles at scroll progress i/N — i.e. trackTop + i*vh.
   const track = document.getElementById("slide-journey-track");
   if (!track) return;
-  const N = slides.length;
-  const D = N + 1;
   const vh = window.innerHeight;
   const trackTop = track.getBoundingClientRect().top + window.scrollY;
-  const targetY = trackTop + ((index + 1) * N) / D * vh;
-  window.scrollTo({ top: targetY, behavior: "smooth" });
+  const targetY = trackTop + index * vh;
+  scrollToY(lenis, targetY);
 }
 
 export function Nav() {
+  const lenis = useLenis();
   const { scrollY } = useScroll();
   // Hidden until scrolled past ~half of hero, fully visible by one viewport
   const opacity = useTransform(scrollY, [0, 320, 640], [0, 0, 1]);
@@ -54,9 +76,9 @@ export function Nav() {
           href="#top"
           onClick={(e) => {
             e.preventDefault();
-            window.scrollTo({ top: 0, behavior: "smooth" });
+            scrollToY(lenis, 0);
           }}
-          className="flex items-center gap-2 rounded-full px-3 py-1.5 text-[color:var(--color-ca-blue-deep)] hover:bg-[color:var(--color-ink)]/[0.04]"
+          className="flex items-center gap-2 rounded-full px-3 py-1.5 text-[color:var(--color-ca-pink)] hover:bg-[color:var(--color-ink)]/[0.04]"
           aria-label="Back to top"
         >
           <CommunityAssistHeart className="h-5 w-auto" />
@@ -71,18 +93,30 @@ export function Nav() {
           <NavLink
             key={item.label}
             slideIndex={item.index}
+            onSelect={() => scrollToSlide(lenis, item.index)}
           >
             {item.label}
           </NavLink>
         ))}
 
         <a
-          href={`#slide-${DONATE_INDEX + 1}`}
+          href="#contribute"
           onClick={(e) => {
             e.preventDefault();
-            scrollToSlide(DONATE_INDEX);
+            scrollToElementId(lenis, "contribute");
           }}
-          className="ml-1 inline-flex items-center justify-center rounded-full bg-[color:var(--color-ink)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[color:var(--color-ca-blue-deep)]"
+          className="hidden rounded-full px-3 py-2 text-sm text-[color:var(--color-ink)]/80 transition-colors hover:bg-[color:var(--color-ink)]/[0.04] hover:text-[color:var(--color-ink)] md:inline-block"
+        >
+          Contribute
+        </a>
+
+        <a
+          href="#contribute"
+          onClick={(e) => {
+            e.preventDefault();
+            scrollToElementId(lenis, "contribute");
+          }}
+          className="ml-1 inline-flex items-center justify-center rounded-full bg-[color:var(--color-ca-pink)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[color:var(--color-ca-pink-deep)]"
         >
           Donate
         </a>
@@ -93,9 +127,11 @@ export function Nav() {
 
 function NavLink({
   slideIndex,
+  onSelect,
   children,
 }: {
   slideIndex: number;
+  onSelect: () => void;
   children: React.ReactNode;
 }) {
   return (
@@ -103,7 +139,7 @@ function NavLink({
       href={`#slide-${slideIndex + 1}`}
       onClick={(e) => {
         e.preventDefault();
-        scrollToSlide(slideIndex);
+        onSelect();
       }}
       className="hidden rounded-full px-3 py-2 text-sm text-[color:var(--color-ink)]/80 transition-colors hover:bg-[color:var(--color-ink)]/[0.04] hover:text-[color:var(--color-ink)] md:inline-block"
     >
