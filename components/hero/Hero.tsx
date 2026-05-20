@@ -2,7 +2,7 @@
 
 import { motion } from "motion/react";
 import { Button } from "@/components/ui/Button";
-import { HeartLogo } from "@/components/hero/HeartLogo";
+import { CommunityAssistHeart } from "@/components/brand/CommunityAssistHeart";
 
 export function Hero() {
   return (
@@ -16,7 +16,7 @@ export function Hero() {
         transition={{ duration: 0.8, ease: [0.2, 0.65, 0.3, 1] }}
         className="flex items-center gap-3 text-[color:var(--color-ca-blue)]"
       >
-        <HeartLogo className="h-9 w-auto" />
+        <CommunityAssistHeart className="h-9 w-auto" />
       </motion.div>
 
       <motion.p

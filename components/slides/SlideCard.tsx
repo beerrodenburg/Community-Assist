@@ -1,39 +1,57 @@
 "use client";
 
 import Image from "next/image";
-import { motion, type MotionValue } from "motion/react";
+import { motion, useTransform, type MotionValue } from "motion/react";
 import { useTiltMotion } from "@/lib/useTiltMotion";
 import type { Slide } from "./slides.data";
 
 type Props = {
   slide: Slide;
-  opacity: MotionValue<number>;
+  y: MotionValue<string>;
+  rotateX: MotionValue<number>;
   scale: MotionValue<number>;
+  opacity: MotionValue<number>;
   pointerEvents: MotionValue<"auto" | "none">;
+  zIndex: number;
   priority?: boolean;
 };
 
 export function SlideCard({
   slide,
-  opacity,
+  y,
+  rotateX,
   scale,
+  opacity,
   pointerEvents,
+  zIndex,
   priority,
 }: Props) {
-  const { rotateX, rotateY, onMouseMove, onMouseLeave } = useTiltMotion();
+  const {
+    rotateX: tiltRotateX,
+    rotateY: tiltRotateY,
+    onMouseMove,
+    onMouseLeave,
+  } = useTiltMotion();
+
+  const composedRotateX = useTransform(
+    [rotateX, tiltRotateX] as MotionValue<number>[],
+    ([slideUp, tilt]: number[]) => slideUp + tilt,
+  );
 
   return (
     <motion.div
-      style={{ opacity, pointerEvents }}
+      style={{ pointerEvents, zIndex, opacity }}
       className="absolute inset-0 grid place-items-center [perspective:1400px]"
     >
       <motion.div
         onMouseMove={onMouseMove}
         onMouseLeave={onMouseLeave}
         style={{
+          y,
           scale,
-          rotateX,
-          rotateY,
+          rotateX: composedRotateX,
+          rotateY: tiltRotateY,
+          transformOrigin: "50% 100%",
           transformStyle: "preserve-3d",
         }}
         className="relative w-[88vw] max-w-[1180px] aspect-[16/9] rounded-2xl bg-white shadow-[var(--shadow-card)] will-change-transform overflow-hidden"
