@@ -39,3 +39,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# source assets (kept locally, not in repo)
+/COMMUNITYASSIST__2026.pdf
+/Community Assist Website-handoff.zip
+/__scaffold/
