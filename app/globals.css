@@ -17,9 +17,11 @@
   --shadow-card-strong: 0 50px 90px -30px rgb(0 0 0 / 0.28), 0 20px 40px -16px rgb(0 0 0 / 0.18);
 }
 
-html,
-body {
+html {
   background: var(--color-paper);
+}
+
+body {
   color: var(--color-ink);
 }
 
